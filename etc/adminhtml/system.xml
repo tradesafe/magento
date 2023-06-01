@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+	<system>
+		<section id="payment">
+			<group id="tradesafe" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+				<label>TradeSafe Escrow</label>
+				<field id="active" type="select" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>Enabled</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="title" type="text" sortOrder="20" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>Title</label>
+				</field>
+				<field id="environment" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Environment</label>
+					<source_model>TradeSafe\PaymentGateway\Model\Adminhtml\Source\Environment</source_model>
+					<depends>
+						<field id="payment/tradesafe/tradesafe_enabled">1</field>
+					</depends>
+				</field>
+				<field id="sandbox_client_id" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Sandbox Client ID</label>
+					<depends>
+						<field id="payment/tradesafe/tradesafe_enabled">1</field>
+						<field id="environment">sandbox</field>
+					</depends>
+				</field>
+				<field id="sandbox_client_secret" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Sandbox Client Secret</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+					<depends>
+						<field id="payment/tradesafe/tradesafe_enabled">1</field>
+						<field id="environment">sandbox</field>
+					</depends>
+				</field>
+				<field id="client_id" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Client ID</label>
+					<depends>
+						<field id="payment/tradesafe/tradesafe_enabled">1</field>
+						<field id="environment">production</field>
+					</depends>
+				</field>
+				<field id="client_secret" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Client Secret</label>
+					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+					<depends>
+						<field id="payment/tradesafe/tradesafe_enabled">1</field>
+						<field id="environment">production</field>
+					</depends>
+				</field>
+			</group>
+		</section>
+	</system>
+</config>

@@ -1,0 +1,28 @@
+{
+    "name": "tradesafe/magento2",
+    "description": "TradeSafe, backed by Standard Bank, provides an escrow payments-based solution that integrates seamlessly with your existing Magento store.",
+    "type": "magento2-module",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "TradeSafe",
+            "email": "support@tradesafe.co.za"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "TradeSafe\\PaymentGateway\\": ""
+        }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "/Users/richard/code/tradesafe/sdk/php"
+        }
+    ]
+}
