@@ -9,8 +9,14 @@
             "email": "support@tradesafe.co.za"
         }
     ],
-    "minimum-stability": "dev",
-    "require": {},
+    "minimum-stability": "stable",
+    "require": {
+        "giggsey/libphonenumber-for-php-lite": "^8.0.0",
+        "tradesafe/sdk": "^0.0.1"
+    },
+    "require-dev": {
+        "marcocesarato/php-conventional-changelog": "^1.17.0"
+    },
     "autoload": {
         "files": [
             "registration.php"
@@ -19,10 +25,11 @@
             "TradeSafe\\PaymentGateway\\": ""
         }
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "/Users/richard/code/tradesafe/sdk/php"
-        }
-    ]
+    "scripts": {
+        "changelog": "conventional-changelog",
+        "release": "conventional-changelog --commit",
+        "release:patch": "conventional-changelog --patch --commit",
+        "release:minor": "conventional-changelog --minor --commit",
+        "release:major": "conventional-changelog --major --commit"
+    }
 }

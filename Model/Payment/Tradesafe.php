@@ -7,44 +7,52 @@ declare(strict_types=1);
 
 namespace TradeSafe\PaymentGateway\Model\Payment;
 
+use Magento\Framework\UrlInterface;
+use TradeSafe\PaymentGateway\Helper\TradeSafeAPI;
+
 class Tradesafe extends \Magento\Payment\Model\Method\AbstractMethod
 {
+    const LOGO_DIR = 'payments/logo/';
 
     protected $_code = "tradesafe";
     protected $_isOffline = false;
     protected $_canAuthorize = true;
     protected $_isGateway = true;
     protected $_canCapture = true;
-    protected $_canUseInternal   = false;
-    protected $_canRefund   = true;
+    protected $_canUseInternal = false;
+    protected $_canRefund = true;
     protected $_canRefundInvoicePartial = true;
 
-    const XML_CLIENT_ID_SANDOX= 'payment/tradesafe/sandbox_client_id';
-    const XML_CLIENT_SECRET_SANDOX= 'payment/tradesafe/sandbox_client_secret';
-    const XML_CLIENT_ID_lIVE= 'payment/tradesafe/client_id';
-    const XML_CLIENT_SECRET_LIVE= 'payment/tradesafe/client_secret';
-    const XML_ENVIROMENT= 'payment/tradesafe/environment';
-    const LOGO_DIR = 'payments/logo/';
+    protected $cache;
 
     protected \Magento\Framework\Encryption\EncryptorInterface $_encryptor;
+    private $storeManager;
 
     public function __construct(
-        public \Magento\Framework\Model\Context                        $context,
-        public \Magento\Framework\Registry                             $registry,
-        public \Magento\Framework\Api\ExtensionAttributesFactory       $extensionFactory,
-        public                                                         $customAttributeFactory,
-        public \Magento\Payment\Helper\Data                            $paymentData,
-        public \Magento\Framework\App\Config\ScopeConfigInterface      $scopeConfig,
-        public                                                         $logger,
-        public \Magento\Framework\Encryption\EncryptorInterface        $encryptor,
-        public \Magento\Framework\Serialize\Serializer\Json            $json,
-        public \Psr\Log\LoggerInterface                                $loggerPsr,
-        public \Magento\Framework\Model\ResourceModel\AbstractResource $resource,
-        public \Magento\Framework\Data\Collection\AbstractDb           $resourceCollection,
+        \Magento\Framework\Model\Context                        $context,
+        \Magento\Framework\Registry                             $registry,
+        \Magento\Framework\Api\ExtensionAttributesFactory       $extensionFactory,
+        \Magento\Framework\Api\AttributeValueFactory            $customAttributeFactory,
+        \Magento\Payment\Helper\Data                            $paymentData,
+        \Magento\Framework\App\Config\ScopeConfigInterface      $scopeConfig,
+        \Magento\Payment\Model\Method\Logger                    $logger,
+        \Magento\Framework\Encryption\EncryptorInterface        $encryptor,
+        \Magento\Framework\Serialize\Serializer\Json            $json,
+        \Psr\Log\LoggerInterface                                $loggerPsr,
+        \Magento\Framework\App\CacheInterface                   $cache,
+        \Magento\Store\Model\StoreManagerInterface              $storeManager,
+        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
+        \Magento\Framework\Data\Collection\AbstractDb           $resourceCollection = null,
 
-        array                                                          $data = []
-    ) {
+        array                                                   $data = []
+    )
+    {
+        $this->scopeConfig = $scopeConfig;
         $this->_encryptor = $encryptor;
+        $this->json = $json;
+        $this->loggerPsr = $loggerPsr;
+        $this->cache = $cache;
+        $this->storeManager = $storeManager;
         parent::__construct(
             $context,
             $registry,
@@ -61,13 +69,13 @@ class Tradesafe extends \Magento\Payment\Model\Method\AbstractMethod
 
     public function isAvailable(
         \Magento\Quote\Api\Data\CartInterface $quote = null
-    ) {
+    )
+    {
         return parent::isAvailable($quote);
     }
 
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-
         try {
             if (!$this->canRefund()) {
                 throw new \Magento\Framework\Exception\LocalizedException(__('The refund action is not available.'));
@@ -83,89 +91,16 @@ class Tradesafe extends \Magento\Payment\Model\Method\AbstractMethod
         return $this;
     }
 
-    public function getAccessToken()
+    public function cancelTransaction($transactionID): array
     {
-        try {
-            $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-            $enviroment = $this->scopeConfig->getValue(self::XML_ENVIROMENT, $storeScope);
-            if ($enviroment == 'sandbox') {
-                $clientId = $this->scopeConfig->getValue(self::XML_CLIENT_ID_SANDOX, $storeScope);
-                $clientSecretEncripted = $this->scopeConfig->getValue(self::XML_CLIENT_SECRET_SANDOX, $storeScope);
-                $clientSecret = $this->_encryptor->decrypt($clientSecretEncripted);
-            }
-            else {
-                $clientId = $this->scopeConfig->getValue(self::XML_CLIENT_ID_lIVE, $storeScope);
-                $clientSecretEncripted = $this->scopeConfig->getValue(self::XML_CLIENT_SECRET_LIVE, $storeScope);
-                $clientSecret = $this->_encryptor->decrypt($clientSecretEncripted);
-            }
+        $tradeSafe = new TradeSafeAPI($this->scopeConfig, $this->_encryptor, $this->cache);
 
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://auth.tradesafe.co.za/oauth/token',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => array('client_id' => $clientId,'client_secret' => $clientSecret,'grant_type' => 'client_credentials'),
-            ));
-
-            $response = curl_exec($curl);
-            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $jsonContent = $this->json->unserialize($response);
-
-            $token = $jsonContent['access_token'];
-            curl_close($curl);
-
-            return $token;
-        } catch (\Exception $e) {
-
-            $this->loggerPsr->info($e->getMessage());
-            return '';
-
-        }
-
-    }
-
-    public function cancelTransaction($transactionID)
-    {
-        try {
-            $bearerToken = $this->getAccessToken();
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api-developer.tradesafe.dev/graphql',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{"query":"\\nmutation {\\n  transactionCancel(id: \\"'.$transactionID.'\\", comment: \\"string\\") {\\n    id\\n    uuid\\n    reference\\n    privacy\\n    title\\n    description\\n    auxiliaryData\\n    state\\n    industry\\n    currency\\n    feeAllocation\\n    workflow\\n    createdAt\\n    updatedAt\\n    deletedAt\\n  }\\n}\\n","variables":{}}',
-            CURLOPT_HTTPHEADER => array(
-                'Authorization: Bearer '.$bearerToken,
-                'Content-Type: application/json'
-            ),
-            ));
-
-            $response = curl_exec($curl);
-            $jsonContent = $this->json->unserialize($response);
-            return true;
-            curl_close($curl);
-
-        } catch (\Exception $th) {
-
-            $this->loggerPsr->info($e->getMessage());
-            return false;
-        }
+        return $tradeSafe->cancelTransaction($transactionID);
     }
 
     public function validateForCsrf(RequestInterface $request): ?bool
     {
-        if($this->isValidRequest($request))
-        {
+        if ($this->isValidRequest($request)) {
             return true;
         }
         return false;
@@ -174,10 +109,10 @@ class Tradesafe extends \Magento\Payment\Model\Method\AbstractMethod
     /**
      * Get logo image from config
      *
+     * @return string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      *
-     * @return string
-    */
+     */
     public function getLogo()
     {
         $logoUrl = false;
@@ -198,7 +133,7 @@ class Tradesafe extends \Magento\Payment\Model\Method\AbstractMethod
      */
     public function displayTitleLogo()
     {
-        return (int) $this->getConfigData('display_logo_title');
+        return (int)$this->getConfigData('display_logo_title');
     }
 }
 

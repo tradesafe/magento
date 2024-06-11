@@ -9,6 +9,10 @@
 				<title>TradeSafe Escrow</title>
 				<allowspecific>0</allowspecific>
 				<group>offline</group>
+                <industry>GENERAL_GOODS_SERVICES</industry>
+                <delivery_days>3</delivery_days>
+                <inspection_days>1</inspection_days>
+                <environment>sandbox</environment>
 			</tradesafe>
 		</payment>
 	</default>

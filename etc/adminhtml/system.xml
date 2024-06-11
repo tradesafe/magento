@@ -1,54 +1,94 @@
 <?xml version="1.0" ?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
-	<system>
-		<section id="payment">
-			<group id="tradesafe" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-				<label>TradeSafe Escrow</label>
-				<field id="active" type="select" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-					<label>Enabled</label>
-					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-				</field>
-				<field id="title" type="text" sortOrder="20" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-					<label>Title</label>
-				</field>
-				<field id="environment" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Environment</label>
-					<source_model>TradeSafe\PaymentGateway\Model\Adminhtml\Source\Environment</source_model>
-					<depends>
-						<field id="payment/tradesafe/tradesafe_enabled">1</field>
-					</depends>
-				</field>
-				<field id="sandbox_client_id" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Sandbox Client ID</label>
-					<depends>
-						<field id="payment/tradesafe/tradesafe_enabled">1</field>
-						<field id="environment">sandbox</field>
-					</depends>
-				</field>
-				<field id="sandbox_client_secret" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Sandbox Client Secret</label>
-					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-					<depends>
-						<field id="payment/tradesafe/tradesafe_enabled">1</field>
-						<field id="environment">sandbox</field>
-					</depends>
-				</field>
-				<field id="client_id" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Client ID</label>
-					<depends>
-						<field id="payment/tradesafe/tradesafe_enabled">1</field>
-						<field id="environment">production</field>
-					</depends>
-				</field>
-				<field id="client_secret" translate="label" type="obscure" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Client Secret</label>
-					<backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-					<depends>
-						<field id="payment/tradesafe/tradesafe_enabled">1</field>
-						<field id="environment">production</field>
-					</depends>
-				</field>
-			</group>
-		</section>
-	</system>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="tradesafe" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+                <label>TradeSafe Escrow</label>
+                <field id="active" type="select" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1"
+                       translate="label">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" type="text" sortOrder="20" showInWebsite="1" showInStore="1" showInDefault="1"
+                       translate="label">
+                    <label>Title</label>
+                </field>
+                <field id="industry" type="select" sortOrder="21" showInWebsite="1" showInStore="1" showInDefault="1"
+                       translate="label">
+                    <label>Industry</label>
+                    <comment>The industry that this store operates in.</comment>
+                    <source_model>TradeSafe\PaymentGateway\Model\Adminhtml\Source\Industry</source_model>
+                </field>
+                <field id="delivery_days" type="select" sortOrder="22" showInWebsite="1" showInStore="1"
+                       showInDefault="1" translate="label">
+                    <label>Days to Deliver</label>
+                    <comment>The number of days required for delivery to take place.</comment>
+                    <source_model>TradeSafe\PaymentGateway\Model\Adminhtml\Source\DeliveryDays</source_model>
+                </field>
+                <field id="inspection_days" type="select" sortOrder="23" showInWebsite="1" showInStore="1"
+                       showInDefault="1" translate="label">
+                    <label>Days to Inspect</label>
+                    <comment>The number of days a buyer has to inspect the goods or service.</comment>
+                    <source_model>TradeSafe\PaymentGateway\Model\Adminhtml\Source\InspectionDays</source_model>
+                </field>
+                <field id="delay_notification" type="select" sortOrder="29" showInWebsite="1" showInStore="1"
+                       showInDefault="1" translate="label">
+                    <label>Delay Delivery Notification</label>
+                    <comment>Some courier companies, such as uAfrica, marks the order as completed once the order has
+                        been fulfilled and not when it has been delivered. This means that a customer might receive an
+                        email and a SMS before the goods were delivered. To prevent this, please specify the number of
+                        business days you would like to initiate the goods acceptance process after the order has been
+                        marked as delivered.
+                    </comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="environment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1"
+                       translate="label">
+                    <label>Environment</label>
+                    <comment>The environment that you would like to use. If you have not completed the Go-Live process
+                        select Sandbox.
+                    </comment>
+                    <source_model>TradeSafe\PaymentGateway\Model\Adminhtml\Source\Environment</source_model>
+                    <depends>
+                        <field id="payment/tradesafe/tradesafe_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="sandbox_client_id" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                    <label>Sandbox Client ID</label>
+                    <depends>
+                        <field id="payment/tradesafe/tradesafe_enabled">1</field>
+                        <field id="environment">sandbox</field>
+                    </depends>
+                </field>
+                <field id="sandbox_client_secret" translate="label" type="obscure" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Sandbox Client Secret</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="payment/tradesafe/tradesafe_enabled">1</field>
+                        <field id="environment">sandbox</field>
+                    </depends>
+                </field>
+                <field id="client_id" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1"
+                       showInStore="1">
+                    <label>Client ID</label>
+                    <depends>
+                        <field id="payment/tradesafe/tradesafe_enabled">1</field>
+                        <field id="environment">live</field>
+                    </depends>
+                </field>
+                <field id="client_secret" translate="label" type="obscure" sortOrder="50" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Client Secret</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="payment/tradesafe/tradesafe_enabled">1</field>
+                        <field id="environment">live</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
 </config>

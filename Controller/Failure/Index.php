@@ -1,5 +1,5 @@
 <?php
-namespace TradeSafe\PaymentGateway\Controller\Fail;
+namespace TradeSafe\PaymentGateway\Controller\Failure;
 use Magento\Framework\App\RequestInterface;
 
 class Index extends \Magento\Framework\App\Action\Action
@@ -23,8 +23,15 @@ class Index extends \Magento\Framework\App\Action\Action
      */
     public function execute()
     {
-        $this->messageManager->addErrorMessage(__('Sorry, but something went wrong during payment process(Payment Declined)'));
-        $this->logger->info('Error in Getting TradeSafe Payment');
+        $reason = $this->getRequest()->getParam('reason');
+
+        $errorMessage = match($reason) {
+            'error' => __('An error occurred while processing your payment.'),
+            'canceled' => __('Payment for your order was cancelled.'),
+            default => __('Sorry, but something went wrong during payment process.')
+        };
+
+        $this->messageManager->addErrorMessage($errorMessage);
         $this->logger->info('Error Payment Failed on TradeSafe for transaction # '.$this->getRequest()->getParam('transactionId'));
         $this->_redirect('checkout/cart');
     }
