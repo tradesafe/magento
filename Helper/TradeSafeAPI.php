@@ -41,9 +41,6 @@ class TradeSafeAPI
             $cachedToken = $this->encryptor->decrypt($encryptedCachedToken);
         }
 
-        // TODO: remove this line
-        $environment = 'test';
-
         $this->environment = $environment;
         $this->client = new \TradeSafe\Client($clientId, $clientSecret, $cachedToken, $environment);
 
