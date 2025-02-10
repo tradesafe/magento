@@ -1,16 +1,14 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-        "config:recommended"
+        "config:recommended",
+        ":disableDependencyDashboard"
     ],
     "labels": [
         "dependencies"
     ],
     "schedule": [
         "* 0-2 * * *"
-    ],
-    "automergeSchedule": [
-        "* 3-5 * * *"
     ],
     "packageRules": [
         {
