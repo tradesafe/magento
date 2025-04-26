@@ -12,7 +12,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "giggsey/libphonenumber-for-php-lite": "^8.0.0",
+        "giggsey/libphonenumber-for-php-lite": "^9.0.0",
         "tradesafe/sdk": "^0.0.1"
     },
     "require-dev": {
